@@ -15,7 +15,7 @@ local_time = 0
 
 def update_local_time(new_timestamp):
     global local_time
-    local_time = new_timestamp + 1
+    local_time = max(local_time + 1, new_timestamp + 1)
 
 class RicartAgarwala:
     def __init__(self):
@@ -71,9 +71,9 @@ class RicartAgarwala:
                 update_local_time(msg_timestamp)
 
                 # Reply
-                if self.REQUESTED == False or self.request_timestamp[0] > msg_timestamp or \
-                                              (self.request_timestamp[0] == msg_timestamp and \
-                                                    rank > sender):
+                if self.REQUESTED == False or self.request_timestamp[0] > msg_timestamp:
+                    self.reply(sender)
+                elif self.request_timestamp[0] == msg_timestamp and rank > sender:
                     self.reply(sender)
                 else:
                     self.defer_queue[sender] = 1
@@ -117,7 +117,7 @@ def critical_function(filename1='tmp.txt'):
     with open(filename1, 'r') as f:
         line = f.readline().strip()
         if line == '' or int(line) != rank:
-            print("\n\n\n******CS FAILED*****\n\n\n", flush=True)
+            print("\n\n\n******CS FAILED*****\nExpected {} found {}\n\n".format(rank, int(line)), flush=True)
             
         else:
             print("CS PASSED", flush=True)

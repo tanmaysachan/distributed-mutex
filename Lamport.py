@@ -15,7 +15,7 @@ local_time = 0
 
 def update_local_time(new_timestamp):
     global local_time
-    local_time = new_timestamp + 1
+    local_time = max(local_time + 1, new_timestamp + 1)
 
 class Lamport:
     def __init__(self):
