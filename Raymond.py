@@ -22,12 +22,14 @@ class Raymond:
         self.holder = max(0, (rank-1)//2)
         self.request_q = Queue()
         self.asked = False
+        self.requested = False
 
     def loop_node(self):
         req = comm.irecv()
         while True:
-            if not self.asked and random.random() < 0.2:
+            if not self.asked and random.random() < 0.01:
                 print('requesting, ', rank, flush=True)
+                self.requested = True
                 self.make_request(1)
 
             # Try receiving a message
@@ -43,25 +45,28 @@ class Raymond:
                 self.asked = False
                 self.exec_cs()
 
-            if self.holder == rank and self.asked == False \
-                    and not self.request_q.empty():
-                self.transfer_privilege()
+            if self.holder == rank:
+                if not self.request_q.empty() and self.request_q.queue[0] != rank:
+                    self.transfer_privilege()
+                    if not self.request_q.empty():
+                        self.requested = True
+                        self.make_request(0)
 
             # Request Message
             if data[0] == True and data[1] is not None and data[1][1] == 0:
                 sender = data[1][0]
                 # print('request reached ', rank, ' from ', sender, flush=True)
                 self.request_q.put(sender)
-                self.make_request(0)
+                if not self.requested:
+                    self.requested = True
+                    self.make_request(0)
 
             # Receive Privilege
             if data[0] == True and data[1] is not None and data[1][1] == 1:
                 sender = data[1][0]
+                self.requested = False
                 self.holder = rank
 
-            print('TT ', rank, self.request_q.queue, flush=True)
-            if self.holder == rank:
-                print('privilege at ', rank, flush=True)
             sleep(random.random())
 
     def make_request(self, t):
@@ -71,7 +76,6 @@ class Raymond:
                 self.asked = True
                 self.request_q.put(rank)
             msg = (rank, 0)
-            # print('msg sent from ', rank, ' to ', self.holder, flush=True)
             comm.send(msg, dest=self.holder)
         elif t == 1:
             self.asked = True
