@@ -55,7 +55,6 @@ class Raymond:
             # Request Message
             if data[0] == True and data[1] is not None and data[1][1] == 0:
                 sender = data[1][0]
-                # print('request reached ', rank, ' from ', sender, flush=True)
                 self.request_q.put(sender)
                 if not self.requested:
                     self.requested = True
