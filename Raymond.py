@@ -5,10 +5,17 @@ import numpy as np
 import random
 from queue import Queue
 from heapq import *
+import sys
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+
+REQUESTING_PROBABILITY = 0.01
+
+if len(sys.argv) >= 2:
+    REQUESTING_PROBABILITY = float(sys.argv[1])
+
 
 # Defines the local time for this process
 local_time = 0
@@ -27,7 +34,7 @@ class Raymond:
     def loop_node(self):
         req = comm.irecv()
         while True:
-            if not self.asked and random.random() < 0.01:
+            if not self.asked and random.random() < REQUESTING_PROBABILITY:
                 print('requesting, ', rank, flush=True)
                 self.requested = True
                 self.make_request(1)
@@ -65,8 +72,6 @@ class Raymond:
                 sender = data[1][0]
                 self.requested = False
                 self.holder = rank
-
-            sleep(random.random())
 
     def make_request(self, t):
         if self.holder != rank:

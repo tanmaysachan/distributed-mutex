@@ -6,10 +6,17 @@ import random
 from queue import Queue
 from heapq import *
 from collections import deque
+import sys
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+
+REQUESTING_PROBABILITY = 0.01
+
+if len(sys.argv) >= 2:
+    REQUESTING_PROBABILITY = float(sys.argv[1])
+
 
 # Defines the local time for this process
 local_time = 0
@@ -34,7 +41,7 @@ class SuzukiKasami:
         while True:
             # With some probability, make a request
             # Do not allow re-requesting
-            if not self.REQUESTED and random.random() < 0.2:
+            if not self.REQUESTED and random.random() < REQUESTING_PROBABILITY:
                 self.REQUESTED = True
                 self.request()
 
@@ -62,7 +69,6 @@ class SuzukiKasami:
             if data[0] == True and data[1] is not None and data[1][2] == 0:
                 token = data[1][1]
                 self.token = token
-                print(token)
 
             # Receive request
             if data[0] == True and data[1] is not None and data[1][2] == 1:
@@ -86,7 +92,6 @@ class SuzukiKasami:
                 comm.send(msg, dest=i)
 
     def transfer_token(self, to):
-        print('sending token from', rank, ' to', to, flush=True)
         msg = (rank, self.token, 0)
         comm.send(msg, dest=to)
 

@@ -5,10 +5,17 @@ import numpy as np
 import random
 from queue import Queue
 from heapq import *
+import sys
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+
+REQUESTING_PROBABILITY = 0.01
+
+if len(sys.argv) >= 2:
+    REQUESTING_PROBABILITY = float(sys.argv[1])
+
 
 # Defines the local time for this process
 local_time = 0
@@ -31,7 +38,7 @@ class RicartAgarwala:
         while True:
             # With some probability, make a request
             # Do not allow re-requesting
-            if not self.REQUESTED and random.random() < 0.2:
+            if not self.REQUESTED and random.random() < REQUESTING_PROBABILITY:
                 self.request()
 
             # Try receiving a message
@@ -78,30 +85,23 @@ class RicartAgarwala:
                 else:
                     self.defer_queue[sender] = 1
 
-            sleep(random.random())
-
     def request(self):
         # Request all nodes
         update_local_time(local_time)
         msg = (local_time, rank, 1)
         self.REQUESTED = True
         self.request_timestamp = msg
-        print('requesting timestamp ', self.request_timestamp, flush=True)
 
         for r in range(size):
             if r != rank:
                 # Send timestamped message
                 comm.send(msg, dest=r)
 
-        sleep(random.random())
-
     def reply(self, receiver):
         if receiver != rank:
             update_local_time(local_time)
             msg = (local_time, rank, 0)
             comm.send(msg, dest=receiver)
-
-        sleep(random.random())
 
     def exec_cs(self):
         print('executing cs for', rank, '... having timestamp ', self.request_timestamp, flush=True)

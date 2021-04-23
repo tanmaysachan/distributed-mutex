@@ -5,10 +5,16 @@ import numpy as np
 import random
 from queue import Queue
 from heapq import *
+import sys
 
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
+
+REQUESTING_PROBABILITY = 0.01
+
+if len(sys.argv) >= 2:
+    REQUESTING_PROBABILITY = float(sys.argv[1])
 
 # Defines the local time for this process
 local_time = 0
@@ -31,7 +37,7 @@ class Lamport:
         while True:
             # With some probability, make a request
             # Do not allow re-requesting
-            if not self.REQUESTED and random.random() < 0.2:
+            if not self.REQUESTED and random.random() < REQUESTING_PROBABILITY:
                 self.request()
 
             # Try receiving a message
@@ -91,8 +97,6 @@ class Lamport:
 
                 self.request_queue = new_queue
 
-            sleep(random.random())
-
     def request(self):
         # Request all nodes
         update_local_time(local_time)
@@ -108,7 +112,6 @@ class Lamport:
 
         # Add req to priority_queue
         heappush(self.request_queue, msg)
-        sleep(random.random())
 
     def reply(self, receiver, timestamp):
         if receiver != rank:
@@ -118,7 +121,6 @@ class Lamport:
 
             # Add req to priority_queue
             heappush(self.request_queue, timestamp)
-        sleep(random.random())
 
     def release(self, timestamp):
         update_local_time(local_time)
@@ -129,8 +131,6 @@ class Lamport:
             if r != rank:
                 # Send timestamped message
                 comm.send(msg, dest=r)
-
-        sleep(random.random())
 
     def exec_cs(self):
         print('executing cs for', rank, '... having timestamp ', self.request_timestamp, flush=True)
