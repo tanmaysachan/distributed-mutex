@@ -80,6 +80,7 @@ class Raymond:
                 self.asked = True
                 self.request_q.put(rank)
             msg = (rank, 0)
+            sleep(random.random())
             comm.send(msg, dest=self.holder)
         elif t == 1:
             self.asked = True
@@ -90,6 +91,7 @@ class Raymond:
         print('transferring from ', rank, ' to ', rec, flush=True)
         self.holder = rec
         msg = (rank, 1)
+        sleep(random.random())
         comm.send(msg, dest=rec)
 
     def exec_cs(self):

@@ -89,10 +89,12 @@ class SuzukiKasami:
         msg = (rank, self.rn[rank], 1)
         for i in range(size):
             if i != rank:
+                sleep(random.random())
                 comm.send(msg, dest=i)
 
     def transfer_token(self, to):
         msg = (rank, self.token, 0)
+        sleep(random.random())
         comm.send(msg, dest=to)
 
         self.token = None

@@ -117,6 +117,7 @@ class RicartAgarwala:
         for r in range(size):
             if r != rank:
                 # Send timestamped message
+                sleep(random.random())
                 comm.send(msg, dest=r)
 
         # sleep(random.random())
@@ -125,6 +126,7 @@ class RicartAgarwala:
         if receiver != rank:
             update_local_time(local_time)
             msg = (local_time, rank, 0)
+            sleep(random.random())
             comm.send(msg, dest=receiver)
 
         # sleep(random.random())

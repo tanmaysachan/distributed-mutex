@@ -108,6 +108,7 @@ class Lamport:
         for r in range(size):
             if r != rank:
                 # Send timestamped message
+                sleep(random.random())
                 comm.send(msg, dest=r)
 
         # Add req to priority_queue
@@ -117,6 +118,7 @@ class Lamport:
         if receiver != rank:
             update_local_time(local_time)
             msg = (local_time, rank, 0)
+            sleep(random.random())
             comm.send(msg, dest=receiver)
 
             # Add req to priority_queue
@@ -130,6 +132,7 @@ class Lamport:
         for r in range(size):
             if r != rank:
                 # Send timestamped message
+                sleep(random.random())
                 comm.send(msg, dest=r)
 
     def exec_cs(self):
